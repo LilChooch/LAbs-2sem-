@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "ac29L+AHgXA9ndwPt8VjWx5tS1t01UrWkpJofb8bQJ0c6F53riD5PeiBJElnCugLUeNjnBAi/lblfTRliGfflg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Олег\\source\\repos\\RpnWPF3\\RpnWPF3\\RpnWPF3.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Олег\\.nuget\\packages\\materialdesigncolors\\1.2.7\\materialdesigncolors.1.2.7.nupkg.sha512",
+    "C:\\Users\\Олег\\.nuget\\packages\\materialdesignthemes\\3.2.0\\materialdesignthemes.3.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}
