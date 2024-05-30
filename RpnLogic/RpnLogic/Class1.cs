@@ -5,20 +5,18 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace RpnLogic
 {
+
     public class ExpRpn
     {
         private double value;
-        public ExpRpn(string input)
-        {
-            
-            var rpnTokens = ConvertToRpn(input);
-            EvaluateRpn(rpnTokens);
-           
 
+        public ExpRpn(string input, double varX)
+        {
+            var rpnTokens = ConvertToRpn(input,varX);
+            EvaluateRpn(rpnTokens);
         }
 
-
-        private List<Token> ConvertToRpn(string input)
+        private List<Token> ConvertToRpn(string input, double varX)
         {
             List<Token> rpn = new List<Token>();
             Stack<Token> stack = new Stack<Token>();
@@ -38,6 +36,10 @@ namespace RpnLogic
                     }
 
                     rpn.Add(new Number(num));
+                }
+                else if(currentChar == 'x')
+                {
+                    rpn.Add(new Number(varX.ToString()));
                 }
                 else if (IsOperator(currentChar) || IsParenthesis(currentChar))
                 {
@@ -64,18 +66,24 @@ namespace RpnLogic
             }
             else
             {
-                while (stack.Count > 0 && stack.Peek().Symbol != '(' && GetPriority(symbol) <= GetPriority(stack.Peek().Symbol))
+                if (symbol == '(')
                 {
-                    rpn.Add(stack.Pop());
+                    stack.Push(new LeftParenthesis());
                 }
-                stack.Push(new Operator(symbol));
+                else
+                {
+                    while (stack.Count > 0 && stack.Peek().Symbol != '(' && GetPriority(symbol) <= GetPriority(stack.Peek().Symbol))
+                    {
+                        rpn.Add(stack.Pop());
+                    }
+                    stack.Push(new Operator(symbol));
+                }
             }
         }
 
         private void EvaluateRpn(List<Token> rpnTokens)
         {
             Stack<double> numbers = new Stack<double>();
-            Stack<Token> operations = new Stack<Token>();
 
             foreach (var token in rpnTokens)
             {
@@ -85,17 +93,10 @@ namespace RpnLogic
                 }
                 else if (token is Operator operatorToken)
                 {
-                    while (operations.Count > 0 && operations.Peek() is Operator && operatorToken.Priority <= ((Operator)operations.Peek()).Priority)
-                    {
-                        numbers.Push(((Operator)operations.Pop()).Apply(numbers.Pop(), numbers.Pop()));
-                    }
-                    operations.Push(operatorToken);
+                    double operand2 = numbers.Pop();
+                    double operand1 = numbers.Pop();
+                    numbers.Push(operatorToken.Apply(operand1, operand2));
                 }
-            }
-
-            while (operations.Count > 0)
-            {
-                numbers.Push(((Operator)operations.Pop()).Apply(numbers.Pop(), numbers.Pop()));
             }
 
             if (numbers.Count == 1)
@@ -104,7 +105,7 @@ namespace RpnLogic
             }
             else
             {
-                throw new InvalidOperationException("Ошибка");
+                throw new InvalidOperationException("Ошибка при вычислении выражения.");
             }
         }
 
@@ -185,15 +186,15 @@ namespace RpnLogic
             switch (Symbol)
             {
                 case '+':
-                    return operand2 + operand1;
+                    return operand1 + operand2;
                 case '-':
-                    return operand2 - operand1;
+                    return operand1 - operand2;
                 case '*':
-                    return operand2 * operand1;
+                    return operand1 * operand2;
                 case '/':
-                    if (operand1 != 0)
+                    if (operand2 != 0)
                     {
-                        return operand2 / operand1;
+                        return operand1 / operand2;
                     }
                     else
                     {
@@ -215,67 +216,5 @@ namespace RpnLogic
         public RightParenthesis() : base(')') { }
     }
 
-    class RpnCalculate
-    {
-        
-        public static List<object> ConvertToRpn(string str)
-        {
-            Dictionary<object, int> prioretyDictionary = new Dictionary<object, int>
-            {
-                {'+', 1},
-                {'-', 1},
-                {'*', 2},
-                {'/', 2},
-                {'(', 0},
-                {')', 5},
-            };
-            List<object> prn = new List<object>();
-            Stack<object> stack = new Stack<object>();
-            string num = string.Empty;
-            for (int i = 0; i < str.Length; i++)
-            {
-                if (prioretyDictionary.ContainsKey(str[i]))
-                {
-                    if (num != string.Empty)
-                    {
-                        prn.Add(num);
-                        num = string.Empty;
-                    }
-
-                    if (str[i] == ')')
-                    {
-                        while ((Char)stack.Peek() != '(')
-                        {
-                            prn.Add(stack.Pop());
-                        }
-                        stack.Pop();
-                    }
-                    else if (stack.Count == 0
-                        || str[i] == '('
-                        || prioretyDictionary[str[i]] > prioretyDictionary[stack.Peek()])
-                    {
-                        stack.Push(str[i]);
-                    }
-                    else if (prioretyDictionary[str[i]] <= prioretyDictionary[stack.Peek()])
-                    {
-                        while (stack.Count > 0 && (Char)stack.Peek() != '(')
-                        {
-                            prn.Add(stack.Pop());
-                        }
-                        stack.Push(str[i]);
-                    }
-                }
-                else
-                {
-                    num += str[i];
-                }
-            }
-            prn.Add(num);
-            while (stack.Count > 0)
-            {
-                prn.Add(stack.Pop());
-            }
-            return prn;
-        }
-    }
+    
 }

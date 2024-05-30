@@ -24,7 +24,8 @@ namespace RpnWPF3
 
         private void btClick_Click(object sender, RoutedEventArgs e)
         {
-            lbOutput.Content = new ExpRpn(tbInput.Text).Value;
+            double X = double.Parse(tbX.Text);
+            lbOutput.Content = new ExpRpn(tbInput.Text,X).Value;
         }
     }
 }
