@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpnLogic", "RpnLogic\RpnLogic.csproj", "{5D119ED4-EB0A-4540-A803-D59F54906176}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D119ED4-EB0A-4540-A803-D59F54906176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D119ED4-EB0A-4540-A803-D59F54906176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D119ED4-EB0A-4540-A803-D59F54906176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D119ED4-EB0A-4540-A803-D59F54906176}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21FA93D2-8B30-4A80-A238-61554DF87886}
+	EndGlobalSection
+EndGlobal
