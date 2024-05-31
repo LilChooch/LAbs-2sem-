@@ -10,6 +10,8 @@ namespace RpnLogic
     {
         private double value;
 
+        public double Value => value;
+
         public ExpRpn(string input, double varX)
         {
             var rpnTokens = ConvertToRpn(input,varX);
@@ -109,7 +111,7 @@ namespace RpnLogic
             }
         }
 
-        public double Value => value;
+       
 
         private bool IsDigit(char symbol)
         {
