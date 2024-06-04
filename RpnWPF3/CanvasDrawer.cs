@@ -52,7 +52,7 @@ namespace RpnWPF3
             _canvas = canvas;
 
             _lineStartX = new Point(_canvas.ActualWidth / 2, 0);
-            _lineEndX = new Point(_canvas.ActualWidth / 2, (int)_canvas.ActualHeight);
+            _lineEndX = new Point(_canvas.ActualWidth / 2, _canvas.ActualHeight);
 
             _lineStartY = new Point(0, _canvas.ActualHeight / 2);
             _lineEndY = new Point(_canvas.ActualWidth, _canvas.ActualHeight / 2);
