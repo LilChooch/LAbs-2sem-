@@ -109,7 +109,6 @@ namespace RpnLogic
                 else if (token is Function functionToken)
                 {
                     List<double> operands = new List<double>();
-
                     for (int i = 0; i < functionToken.FuncOperand; i++)
                     {
                         operands.Insert(0, numbers.Pop());
@@ -281,8 +280,8 @@ namespace RpnLogic
         {
             switch (Name)
             {
-                case "log":
-                    return Math.Log(operands[1], operands[0]);
+                case "log":               
+                      return Math.Log(operands[1], operands[0]);                
                 case "sqrt":
                     return Math.Sqrt(operands[0]);
                 case "rt":

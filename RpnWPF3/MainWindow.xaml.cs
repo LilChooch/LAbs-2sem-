@@ -45,7 +45,11 @@ namespace RpnWPF3
             for(double x = start; x <= end; x+=step)
             {
                 var y = new ExpRpn(input, x).Value;
-                points.Add(new Point(x, y));
+
+                if (!double.IsInfinity(y) && !double.IsNaN(y))
+                {
+                    points.Add(new Point(x, y));
+                }
             }
             canvDrawer.DrawGraph(points);
 
