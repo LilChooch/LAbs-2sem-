@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using static RpnLogic.Operator;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -15,7 +16,7 @@ namespace RpnLogic
 
         public ExpRpn(string input, double varX)
         {
-            var rpnTokens = ConvertToRpn(input,varX);
+            var rpnTokens = ConvertToRpn(input, varX);
             EvaluateRpn(rpnTokens);
         }
 
@@ -28,7 +29,7 @@ namespace RpnLogic
             {
                 char currentChar = input[i];
 
-                if (IsDigit(currentChar))
+                if (Char.IsDigit(currentChar) || currentChar == '.')
                 {
                     string num = currentChar.ToString();
 
@@ -38,23 +39,28 @@ namespace RpnLogic
                         i++;
                     }
 
-                    rpn.Add(new Number(num));
+                    rpn.Add(new Number(double.Parse(num)));
                 }
-                else if(currentChar == 'x')
+                else if (currentChar == 'x')
                 {
-                    rpn.Add(new Number(varX.ToString()));
+                    rpn.Add(new Number(varX));
                 }
-                else if (IsOperator(currentChar) || IsParenthesis(currentChar))
+                else if (IsOperator(currentChar))
                 {
-                    ProcessOperatorOrParenthesis(currentChar, rpn, stack);
+                    ProcessOperator(currentChar, rpn, stack);
                 }
-                else if (IsFunction(currentChar, input, i, out int newIndex))
+                else if (IsParenthesis(currentChar))
+                {
+                    ProcessParenthesis(currentChar, rpn, stack);
+                }
+                else if (IsFunction(input, i, out int newIndex))
                 {
                     string functionName = GetFunctionName(input, i, out newIndex);
-                    stack.Push(new Function(functionName));
+                    stack.Push(CreateFunction(functionName));
                     i = newIndex;
                 }
             }
+
             while (stack.Count > 0)
             {
                 rpn.Add(stack.Pop());
@@ -63,30 +69,28 @@ namespace RpnLogic
             return rpn;
         }
 
-        private void ProcessOperatorOrParenthesis(char symbol, List<Token> rpn, Stack<Token> stack)
+        private void ProcessOperator(char symbol, List<Token> rpn, Stack<Token> stack)
         {
-            if (symbol == ')')
+            while (stack.Count > 0 && stack.Peek() is Operator op && GetPriority(symbol) <= op.Priority)
             {
-                while (stack.Peek().Symbol != '(')
+                rpn.Add(stack.Pop());
+            }
+            stack.Push(CreateOperator(symbol));
+        }
+
+        private void ProcessParenthesis(char symbol, List<Token> rpn, Stack<Token> stack)
+        {
+            if (symbol == '(')
+            {
+                stack.Push(new LeftParenthesis());
+            }
+            else
+            {
+                while (!(stack.Peek() is LeftParenthesis))
                 {
                     rpn.Add(stack.Pop());
                 }
                 stack.Pop();
-            }
-            else
-            {
-                if (symbol == '(')
-                {
-                    stack.Push(new LeftParenthesis());
-                }
-                else
-                {
-                    while (stack.Count > 0 && stack.Peek().Symbol != '(' && GetPriority(symbol) <= GetPriority(stack.Peek().Symbol))
-                    {
-                        rpn.Add(stack.Pop());
-                    }
-                    stack.Push(new Operator(symbol));
-                }
             }
         }
 
@@ -102,19 +106,21 @@ namespace RpnLogic
                 }
                 else if (token is Operator operatorToken)
                 {
-                    double operand2 = numbers.Pop();
-                    double operand1 = numbers.Pop();
-                    numbers.Push(operatorToken.Apply(operand1, operand2));
+                    double[] operands = new double[operatorToken.OperandCount];
+                    for (int i = operatorToken.OperandCount - 1; i >= 0; i--)
+                    {
+                        operands[i] = numbers.Pop();
+                    }
+                    numbers.Push(operatorToken.Apply(operands));
                 }
                 else if (token is Function functionToken)
                 {
-                    List<double> operands = new List<double>();
-                    for (int i = 0; i < functionToken.FuncOperand; i++)
+                    double[] operands = new double[functionToken.OperandCount];
+                    for (int i = functionToken.OperandCount - 1; i >= 0; i--)
                     {
-                        operands.Insert(0, numbers.Pop());
+                        operands[i] = numbers.Pop();
                     }
-
-                    numbers.Push(functionToken.ApplyFunc(operands.ToArray()));
+                    numbers.Push(functionToken.Apply(operands));
                 }
             }
 
@@ -128,13 +134,6 @@ namespace RpnLogic
             }
         }
 
-       
-
-        private bool IsDigit(char symbol)
-        {
-            return Char.IsDigit(symbol) || symbol == '.';
-        }
-
         private bool IsOperator(char symbol)
         {
             return symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/';
@@ -144,7 +143,8 @@ namespace RpnLogic
         {
             return symbol == '(' || symbol == ')';
         }
-        private bool IsFunction(char symbol, string input, int index, out int newIndex)
+
+        private bool IsFunction(string input, int index, out int newIndex)
         {
             string functionName = GetFunctionName(input, index, out newIndex);
             return Function.FunctionNames.Contains(functionName);
@@ -171,146 +171,52 @@ namespace RpnLogic
                 case '*':
                 case '/':
                     return 2;
+                case 's':
+                case 'c':
+                case 't':
+                    return 3;
                 default:
                     return 0;
             }
         }
-       
-    }
 
-    class Token
-    {
-        public char Symbol { get; }
-
-        public Token(char symbol)
+        private Operator CreateOperator(char symbol)
         {
-            Symbol = symbol;
-        }
-    }
-
-    class Number : Token
-    {
-        public Number(string value) : base(value[0]) { Value = double.Parse(value); }
-
-        public double Value { get; }
-    }
-
-    class Operator : Token
-    {
-        public Operator(char symbol) : base(symbol) { }
-
-        public int Priority
-        {
-            get
-            {
-                switch (Symbol)
-                {
-                    case '+':
-                    case '-':
-                        return 1;
-                    case '*':
-                    case '/':
-                        return 2;
-                    default:
-                        return 0;
-                }
-            }
-        }
-      
-        public double Apply(double operand1, double operand2)
-        {
-            switch (Symbol)
+            switch (symbol)
             {
                 case '+':
-                    return operand1 + operand2;
+                    return new Plus();
                 case '-':
-                    return operand1 - operand2;
+                    return new Minus();
                 case '*':
-                    return operand1 * operand2;
-                case '^':
-                    return Math.Pow(operand1, operand2);
+                    return new Multiply();
                 case '/':
-                    if (operand2 != 0)
-                    {
-                        return operand1 / operand2;
-                    }
-                    else
-                    {
-                        throw new DivideByZeroException("На ноль делить нельзя");
-                    }
+                    return new Divide();
                 default:
-                    throw new ArgumentException("Недопустимый оператор " + Symbol);
+                    throw new ArgumentException("Недопустимый оператор " + symbol);
             }
         }
-       
 
-    }
-    class Function : Token
-    {
-        public static readonly List<string> FunctionNames = new List<string>
+        private Function CreateFunction(string name)
         {
-        "log", "sqrt", "rt", "sin", "cos", "tg", "ctg"
-        };
-
-        public Function(string name) : base(name[0]) { Name = name; }
-
-        public string Name { get; }
-
-        public int FuncOperand
-        {
-            get
+            switch (name)
             {
-                switch (Name)
-                {
-                    case "log":
-                    case "rt":
-                        return 2;
-                    case "sqrt":
-                    case "sin":
-                    case "cos":
-                    case "tg":
-                    case "ctg":
-                        return 1;
-                    default:
-                        throw new ArgumentException("Недопустимая функция " + Name);
-                }
-            }
-        }
-        public double ApplyFunc(double[] operands)
-        {
-            switch (Name)
-            {
-                case "log":               
-                      return Math.Log(operands[1], operands[0]);                
+                case "log":
+                    return new Log();
                 case "sqrt":
-                    return Math.Sqrt(operands[0]);
-                case "rt":
-                    return Math.Pow(operands[1], 1.0 / operands[0]);
+                    return new Sqrt();
                 case "sin":
-                    return Math.Sin(operands[0]);
+                    return new Sin();
                 case "cos":
-                    return Math.Cos(operands[0]);
+                    return new Cos();
                 case "tg":
-                    return Math.Tan(operands[0]);
+                    return new Tg();
                 case "ctg":
-                    return 1.0 / Math.Tan(operands[0]);
+                    return new Ctg();
                 default:
-                    throw new ArgumentException("Недопустимая функция " + Name);
+                    throw new ArgumentException("Недопустимая функция " + name);
             }
         }
     }
 
-
-
-        class LeftParenthesis : Token
-    {
-        public LeftParenthesis() : base('(') { }
-    }
-
-    class RightParenthesis : Token
-    {
-        public RightParenthesis() : base(')') { }
-    }
-
-    
 }
