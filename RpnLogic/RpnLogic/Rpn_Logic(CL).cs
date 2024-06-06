@@ -192,6 +192,8 @@ namespace RpnLogic
                     return new Multiply();
                 case '/':
                     return new Divide();
+                case '^':
+                    return new Power();
                 default:
                     throw new ArgumentException("Недопустимый оператор " + symbol);
             }
@@ -213,6 +215,8 @@ namespace RpnLogic
                     return new Tg();
                 case "ctg":
                     return new Ctg();
+                case "rt":
+                    return new Rt();
                 default:
                     throw new ArgumentException("Недопустимая функция " + name);
             }

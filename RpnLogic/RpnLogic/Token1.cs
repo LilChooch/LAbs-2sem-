@@ -32,9 +32,6 @@ namespace RpnLogic
         {
             public override int Priority => 1;
             public override int OperandCount => 2;
-
-
-
             public override double Apply(params double[] operands)
             {
                 return operands[0] + operands[1];
@@ -44,9 +41,6 @@ namespace RpnLogic
         {
             public override int Priority => 1;
             public override int OperandCount => 2;
-
-
-
             public override double Apply(params double[] operands)
             {
                 return operands[0] - operands[1];
@@ -56,9 +50,6 @@ namespace RpnLogic
         {
             public override int Priority => 2;
             public override int OperandCount => 2;
-
-
-
             public override double Apply(params double[] operands)
             {
                 return operands[0] * operands[1];
@@ -74,6 +65,15 @@ namespace RpnLogic
                 if (operands[1] == 0)
                     throw new DivideByZeroException("На ноль делить нельзя");
                 return operands[0] / operands[1];
+            }
+        }
+        public class Power : Operator
+        {
+            public override int Priority => 2;
+            public override int OperandCount => 2;
+            public override double Apply(params double[] operands)
+            {
+                return Math.Pow(operands[0], operands[1]);
             }
         }
         public abstract class Function : Token
@@ -98,6 +98,17 @@ namespace RpnLogic
             public override double Apply(params double[] operands)
             {
                 return Math.Log(operands[1], operands[0]);
+            }
+        }
+        public class Rt : Function
+        {
+            public override int Priority => 3;
+            public override string Name => "rt";
+            public override int OperandCount => 2;
+
+            public override double Apply(params double[] operands)
+            {
+                return Math.Pow(operands[1], 1.0 / operands[0]);
             }
         }
         public class Sqrt : Function
